@@ -10,40 +10,54 @@ tasks = []
 def login():
     return render_template("login.html")
 
+
 @app.route('/login', methods=['POST'])
 def do_login():
     username = request.form['username']
     password = request.form['password']
 
-    if username == "student" and password == "1234":
+    # allow any login as long as fields are filled
+    if username and password:
         session['user'] = username
         return redirect("/dashboard")
     else:
-        return "Invalid Login"
+        return "Please enter username and password"
+
 
 @app.route('/dashboard')
 def dashboard():
     if 'user' in session:
-        return render_template("dashboard.html", tasks=tasks)
+        return render_template("dashboard.html", tasks=tasks, user=session['user'])
     else:
         return redirect("/")
 
+
 @app.route('/add', methods=['POST'])
 def add():
-    task = request.form['task']
-    tasks.append(task)
-    return redirect("/dashboard")
+    if 'user' in session:
+        task = request.form['task']
+        if task:
+            tasks.append(task)
+        return redirect("/dashboard")
+    else:
+        return redirect("/")
+
 
 @app.route('/delete/<int:id>')
 def delete(id):
-    if 0 <= id < len(tasks):
-        tasks.pop(id)
-    return redirect("/dashboard")
+    if 'user' in session:
+        if 0 <= id < len(tasks):
+            tasks.pop(id)
+        return redirect("/dashboard")
+    else:
+        return redirect("/")
+
 
 @app.route('/logout')
 def logout():
     session.pop('user', None)
     return redirect("/")
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
