@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, session
+import os
 
 app = Flask(__name__)
 app.secret_key = "agileproject"
@@ -35,7 +36,8 @@ def add():
 
 @app.route('/delete/<int:id>')
 def delete(id):
-    tasks.pop(id)
+    if 0 <= id < len(tasks):
+        tasks.pop(id)
     return redirect("/dashboard")
 
 @app.route('/logout')
@@ -44,4 +46,5 @@ def logout():
     return redirect("/")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
